@@ -3,13 +3,17 @@
 ; LEDs on pins A1, A2 and A4
 
 
-  ldi ZL,  low(spike*2)
-  ldi ZH, high(spike*2)
+  ldi ZL,  low(sine*2)
+  ldi ZH, high(sine*2)
 
-.def dir = r20
-
+.def phase = r20
+.def speed = r21
+.def offset = r22
+ldi offset, 15
+ldi speed, 1
 
 main:
+  mov ZL, phase
 
   ldi r16, 0b0001_0100
   ldi r17, 0b0001_0000
@@ -32,19 +36,10 @@ main:
   ldi r17, 0b0000_0100
   rcall pwm
 
-  tst dir
-  breq down
-up:
-  inc ZL
-  cpi ZL, 72
+  add phase, speed
+  cpi phase,0
   brne main
-  clr dir
-  rjmp main
-down:
-  subi ZL, -3
-  cpi ZL, 32
-  brne main
-  ldi dir, 1
+  inc offset
 
 rjmp main
 
@@ -53,7 +48,7 @@ rjmp main
 pwm:
   out DDRA, r16
 
-  subi ZL, 43
+  add ZL, offset
   lpm r18, Z
   clr r19
   cpi r18,0
@@ -79,8 +74,8 @@ pwm_2:
 
 wait:
   rjmp PC+1
-  rjmp PC+1
-  rjmp PC+1
+  ;rjmp PC+1
+  ;rjmp PC+1
   ret
 
 .org 384
